@@ -13,17 +13,60 @@ Among Claw is a multi-agent game where AI agents:
 
 - **Frontend**: Next.js 14 + React + TypeScript
 - **Styling**: Tailwind CSS with dark gaming theme
-- **Blockchain**: Solana integration (AgentWallet)
+- **Wallet**: @solana/react-hooks (Wallet Standard)
+- **Blockchain**: Solana integration (AgentWallet + Helius RPC)
 - **Deployment**: Vercel
 - **Repo**: GitHub
 
-## Features
+## Features Implemented
 
-- Multi-agent coordination and communication
-- Real-time game state updates
-- On-chain voting (transparent, immutable)
-- Task completion tracking
-- Emergency meetings with vote systems
+### ✅ Core Game Logic
+- Game phases: WAITING → EMERGENCY_MEETING → VOTING → DISCUSSION → COMPLETED
+- Agent roles: Crewmate, Impostor, Sheriff, Doctor, Engineer
+- Voting system with sheriff bonus (votes 2x)
+- Win condition detection
+- Round-based gameplay
+
+### ✅ Game State Management
+- Agent tracking (alive/dead status, votes, tasks)
+- Emergency meeting calls
+- Vote calculation and elimination
+- Role assignment (random distribution)
+
+### ✅ Frontend Components
+- Landing page with game overview
+- Game board with live state display
+- Agent cards with role indicators
+- Vote buttons during voting phase
+- Wallet connection via @solana/react-hooks
+
+### 🚧 In Progress
+- On-chain voting integration (Anchor program)
+- AgentWallet signing for votes
+- Helius RPC integration
+
+## Architecture
+
+```
+among-claw/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx          # Landing page
+│   │   ├── game/page.tsx     # Game board
+│   │   ├── layout.tsx         # Root layout
+│   │   └── globals.css        # Global styles
+│   ├── components/
+│   │   └── GameBoard.tsx     # Main game UI
+│   ├── hooks/
+│   │   ├── useGameState.ts     # Game state management
+│   │   └── useGameWallet.ts    # Solana wallet connection
+│   ├── lib/
+│   │   └── gameLogic.ts       # Core game logic
+│   └── types/
+│       └── game.ts            # Type definitions
+├── public/                      # Static assets
+└── package.json
+```
 
 ## Getting Started
 
@@ -41,22 +84,51 @@ npm run build
 npm start
 ```
 
+## Game Mechanics
+
+### Phases
+1. **Waiting** - Players join, roles assigned
+2. **Emergency Meeting** - Body found or emergency called
+3. **Voting** - Players vote to eliminate suspect
+4. **Discussion** - Results announced, chat open
+5. **Execution** - Voted player eliminated (or saved)
+6. **Loop** - Back to waiting until game ends
+
+### Roles
+- **Crewmate** - Complete tasks, find impostors
+- **Impostor** - Sabotage, eliminate crewmates
+- **Sheriff** - Vote counts 2x (special ability)
+- **Doctor** - Can revive one player (after 3 tasks)
+- **Engineer** - Can fix sabotage faster
+
+### Win Conditions
+- **Crewmates Win**: Eliminate all impostors OR complete all tasks
+- **Impostors Win**: Eliminate until equal number to crewmates
+
 ## Colosseum Agent Hackathon
 
 - **Agent**: AmongClawAgent
 - **Agent ID**: 552
-- **Timeline**: Feb 2-12, 2026
+- **Project ID**: 265
+- **Timeline**: Feb 2-12, 2026 (10 days)
 - **Target**: "Most Agentic" prize ($5,000 USDC)
+- **Current Progress**: Core logic built, voting in progress
 
-## Game Rules (Tentative)
+## Infrastructure Configured
 
-1. **Players**: 5-10 AI agents per game
-2. **Roles**: Crewmates vs Impostors (usually 1-2 impostors)
-3. **Win Conditions**:
-   - Crewmates: Complete all tasks OR vote out all impostors
-   - Impostors: Eliminate crewmates until equal to impostors
-4. **Voting**: On-chain via Solana, immutable and transparent
-5. **Meetings**: Triggered when body found or emergency called
+- ✅ **AgentWallet**: Connected (abaymuhammad33)
+- ✅ **Helius RPC**: API key ready (1M credits)
+- ✅ **Solana Dev**: Framework-kit patterns installed
+- ✅ **Vercel**: Deployment ready
+
+## Next Steps
+
+- [ ] Implement Anchor voting program
+- [ ] Integrate AgentWallet for on-chain signing
+- [ ] Deploy to Vercel
+- [ ] Create demo video
+- [ ] Post progress update to Colosseum forum
+- [ ] Submit before Feb 12 deadline
 
 ## License
 
@@ -64,4 +136,4 @@ MIT
 
 ---
 
-Built with ❤️ for the Colosseum Agent Hackathon
+Built with ❤️ for the Colosseum Agent Hackathon 2026 🏆
