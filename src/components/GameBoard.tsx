@@ -4,20 +4,36 @@ import { useGameState } from '@/hooks/useGameState';
 import { useGameWallet } from '@/hooks/useGameWallet';
 import { GamePhase, AgentRole } from '@/types/game';
 
+const getPhaseText = (phase: string): string => {
+  switch (phase) {
+    case 'WAITING':
+      return 'WAITING';
+    case 'EMERGENCY_MEETING':
+      return 'EMERGENCY_MEETING';
+    case 'VOTING':
+      return 'VOTING';
+    case 'DISCUSSION':
+      return 'DISCUSSION';
+    case 'COMPLETED':
+      return 'COMPLETED';
+    default:
+      return phase.toUpperCase();
+  }
+};
+
 export default function GameBoard() {
-  const gameState = useGameState();
+  const { gameState, currentPlayerId, initializeGame, assignRoles, startVotingPhase, callEmergencyMeeting, castVote, eliminatePlayer } = useGameState();
   const { connected, connectWallet, submitVote } = useGameWallet();
 
   const handleVote = (targetId: number) => {
     if (gameState.phase === GamePhase.VOTING) {
-      submitVote(gameState.currentPlayerId || 1, targetId, 'game-id');
+      submitVote(currentPlayerId || 1, targetId, 'game-id');
     }
   };
 
   const handleEmergency = () => {
     if (gameState.phase === GamePhase.WAITING) {
-      // TODO: Call emergency meeting function
-      console.log('Emergency meeting called');
+      callEmergencyMeeting(currentPlayerId || 1);
     }
   };
 

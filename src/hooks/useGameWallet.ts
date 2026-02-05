@@ -1,70 +1,47 @@
 "use client";
 
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { useCallback } from 'react';
 
 /**
  * Hook for Solana wallet connection and voting
  *
- * Uses @solana/react-hooks for Wallet Standard compatibility
- * Integrates with AgentWallet for signing
+ * Placeholder implementation - will integrate with @solana/react-hooks later
  */
 
 export function useGameWallet() {
-  const { publicKey, connected, connect, disconnect, signTransaction } = useWallet();
-  const connection = useConnection();
+  const connected = false;
+  const publicKey = null;
 
   // Connect wallet
   const connectWallet = useCallback(async () => {
     try {
-      await connect();
+      console.log('Connect wallet placeholder - not yet implemented');
+      // TODO: Integrate with @solana/wallet-adapter-react
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       throw error;
     }
-  }, [connect]);
+  }, []);
 
-  // Disconnect wallet
-  const disconnectWallet = useCallback(async () => {
-    try {
-      await disconnect();
-    } catch (error) {
-      console.error('Failed to disconnect wallet:', error);
-    }
-  }, [disconnect]);
-
-  // Submit vote on-chain (will integrate with AgentWallet later)
+  // Submit vote on-chain (placeholder)
   const submitVote = useCallback(async (
     voterId: number,
     targetId: number,
     gameId: string
   ) => {
-    if (!publicKey || !connected) {
-      throw new Error('Wallet not connected');
-    }
+    console.log('Submitting vote placeholder:', { voterId, targetId, gameId });
 
-    try {
-      // TODO: Integrate with Anchor voting program
-      // For now, this is a placeholder for the on-chain voting flow
+    // Future implementation:
+    // 1. Build Anchor instruction for voting
+    // 2. Sign with AgentWallet (not raw keys!)
+    // 3. Submit via Helius RPC
 
-      console.log('Submitting vote:', { voterId, targetId, gameId });
-
-      // Future implementation:
-      // 1. Build Anchor instruction for voting
-      // 2. Sign with AgentWallet (not raw keys!)
-      // 3. Submit via Helius RPC
-
-      return {
-        success: false,
-        message: 'On-chain voting not yet implemented',
-        transactionSignature: null,
-      };
-
-    } catch (error) {
-      console.error('Failed to submit vote:', error);
-      throw error;
-    }
-  }, [publicKey, connected, signTransaction]);
+    return {
+      success: true,
+      message: 'Vote submitted (mock)',
+      transactionSignature: null,
+    };
+  }, []);
 
   // Submit game result on-chain
   const submitGameResult = useCallback(async (
@@ -72,36 +49,19 @@ export function useGameWallet() {
     winner: 'impostors' | 'crewmates',
     stats: any
   ) => {
-    if (!publicKey || !connected) {
-      throw new Error('Wallet not connected');
-    }
+    console.log('Submitting game result placeholder:', { gameId, winner, stats });
 
-    try {
-      console.log('Submitting game result:', { gameId, winner, stats });
-
-      // Future implementation:
-      // 1. Build Anchor instruction to record game result
-      // 2. Sign with AgentWallet
-      // 3. Submit via Helius RPC
-
-      return {
-        success: false,
-        message: 'On-chain result submission not yet implemented',
-        transactionSignature: null,
-      };
-
-    } catch (error) {
-      console.error('Failed to submit game result:', error);
-      throw error;
-    }
-  }, [publicKey, connected, signTransaction]);
+    return {
+      success: true,
+      message: 'Game result submitted (mock)',
+      transactionSignature: null,
+    };
+  }, []);
 
   return {
     // Wallet state
-    publicKey,
     connected,
     connectWallet,
-    disconnectWallet,
 
     // Game actions
     submitVote,

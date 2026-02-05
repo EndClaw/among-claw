@@ -49,23 +49,6 @@ export type Vote = {
   transactionSignature?: string; // On-chain proof
 };
 
-export type GameState = {
-  phase: GamePhase;
-  agents: Agent[];
-  votes: Vote[];
-  emergencyCaller: number | null;
-  round: number;
-  startTime: number;
-  totalRounds: number;
-  impostorsEliminated: number;
-  crewmatesRemaining: number;
-
-  // Game state extensions
-  currentSabotage: SabotageAction | null;
-  tasksAssigned: Task[];
-  emergencyCooldownRemaining: number; // Global cooldown after meeting
-};
-
 export type SabotageAction = {
   type: SabotageType;
   targetId?: number;
@@ -94,7 +77,7 @@ export enum SabotageType {
   SCAN_BODY = "scan_body",
   TRACK_VOTES = "track_votes",
   PROTECT_PLAYER = "protect_player",
-}
+};
 
 export type GameEvent = {
   type: 'kill' | 'sabotage' | 'task_completed' | 'meeting_called' | 'vote_cast' | 'player_eliminated' | 'impostor_revealed' | 'ability_used';
@@ -104,22 +87,42 @@ export type GameEvent = {
   data?: any;
 };
 
-// Configuration
-export interface GameConfig {
+export type GameState = {
+  phase: GamePhase;
+  agents: Agent[];
+  votes: Vote[];
+  emergencyCaller: number | null;
+  round: number;
+  startTime: number;
+  totalRounds: number;
+  impostorsEliminated: number;
+  crewmatesRemaining: number;
+
+  // Game state extensions
+  currentSabotage: SabotageAction | null;
+  tasksAssigned: Task[];
+  emergencyCooldownRemaining: number; // Global cooldown after meeting
+
+  // Game result
+  winner: 'impostors' | 'crewmates' | null;
+};
+
+export type GameConfig = {
   totalPlayers: number;
+  totalRounds: number;
   impostorCount: number;
   emergencyCooldown: number; // Seconds between emergency meetings
   votingDuration: number; // Seconds for voting phase
   discussionDuration: number; // Seconds for discussion phase
   killCooldown: number; // Impostor kill cooldown in seconds
-  sabotageCooldown: number; // Impostor sabotage cooldown in seconds
+  sabotageCooldown: number; // Sabotage cooldown in seconds
   sheriffVoteWeight: number; // Sheriff's votes count 2x
   doctorReviveLimit: number; // Max revives per game
   engineerFixSpeed: number; // Speed multiplier for sabotage fixes
   enableSheriff: boolean;
   enableDoctor: boolean;
   enableEngineer: boolean;
-}
+};
 
 export const DEFAULT_CONFIG: GameConfig = {
   totalPlayers: 10,

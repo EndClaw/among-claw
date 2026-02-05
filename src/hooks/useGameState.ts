@@ -20,6 +20,10 @@ export function useGameState() {
     totalRounds: DEFAULT_CONFIG.totalRounds,
     impostorsEliminated: 0,
     crewmatesRemaining: 0,
+    currentSabotage: null,
+    tasksAssigned: [],
+    emergencyCooldownRemaining: 0,
+    winner: null,
   });
 
   const [currentPlayerId, setCurrentPlayerId] = useState<number | null>(null);
@@ -34,6 +38,7 @@ export function useGameState() {
       voteTarget: null,
       tasksCompleted: 0,
       isImpostor: false,
+      tasks: [], // Empty array for crewmates' tasks
     }));
 
     setGameState(prev => ({
@@ -47,6 +52,10 @@ export function useGameState() {
       totalRounds: DEFAULT_CONFIG.totalRounds,
       impostorsEliminated: 0,
       crewmatesRemaining: playerAddresses.length - DEFAULT_CONFIG.impostorCount,
+      currentSabotage: null,
+      tasksAssigned: [],
+      emergencyCooldownRemaining: 0,
+      winner: null,
     }));
 
     console.log('Game initialized with', playerAddresses.length, 'players');
@@ -107,61 +116,69 @@ export function useGameState() {
     // Auto-start discussion phase after voting duration
     setTimeout(() => {
       setGameState(prev => {
-        if (prev.phase === 'voting') {
-          const voteCount = new Map<number, number>();
-          prev.votes.forEach(vote => {
-            const count = voteCount.get(vote.targetId as number) || 0;
-            voteCount.set(vote.targetId as number, count + 1);
+        if (prev.phase !== 'voting') {
+          return prev; // No change if not in voting phase
+        }
+
+        const voteCount = new Map<number, number>();
+        prev.votes.forEach(vote => {
+          const count = voteCount.get(vote.targetId as number) || 0;
+          voteCount.set(vote.targetId as number, count + 1);
+        });
+
+        // Find most voted player
+        let maxVotes = 0;
+        let eliminatedId: number | null = null;
+
+        voteCount.forEach((count, playerId) => {
+          if (count > maxVotes) {
+            maxVotes = count;
+            eliminatedId = playerId as number;
+          }
+        });
+
+        // Eliminate player
+        if (eliminatedId !== null) {
+          const updatedAgents = prev.agents.map(agent => {
+            if (agent.id === eliminatedId) {
+              return { ...agent, isAlive: false };
+            }
+            return agent;
           });
 
-          // Find most voted player
-          let maxVotes = 0;
-          let eliminatedId: number | null = null;
+          const eliminatedAgent = prev.agents.find(a => a.id === eliminatedId);
+          const newImpostorsEliminated = eliminatedAgent?.isImpostor
+            ? prev.impostorsEliminated + 1
+            : prev.impostorsEliminated;
+          const newCrewmatesRemaining = !eliminatedAgent?.isImpostor
+            ? prev.crewmatesRemaining - 1
+            : prev.crewmatesRemaining;
 
-          voteCount.forEach((count, playerId) => {
-            if (count > maxVotes) {
-              maxVotes = count;
-              eliminatedId = playerId as number;
-            }
-          });
+          // Check win conditions
+          const aliveImpostors = updatedAgents.filter(a => a.isImpostor && a.isAlive);
+          const aliveCrewmates = updatedAgents.filter(a => !a.isImpostor && a.isAlive);
 
-          // Eliminate player
-          if (eliminatedId !== null) {
-            const updatedAgents = prev.agents.map(agent => {
-              if (agent.id === eliminatedId) {
-                return { ...agent, isAlive: false };
-              }
-              return agent;
-            });
-
-            const eliminatedAgent = prev.agents.find(a => a.id === eliminatedId);
-            const newImpostorsEliminated = eliminatedAgent?.isImpostor
-              ? prev.impostorsEliminated + 1
-              : prev.impostorsEliminated;
-            const newCrewmatesRemaining = !eliminatedAgent?.isImpostor
-              ? prev.crewmatesRemaining - 1
-              : prev.crewmatesRemaining;
-
-            // Check win conditions
-            const aliveImpostors = updatedAgents.filter(a => a.isImpostor && a.isAlive);
-            const aliveCrewmates = updatedAgents.filter(a => !a.isImpostor && a.isAlive);
-
-            let newPhase = 'discussion' as any;
-            if (aliveImpostors.length === 0 || aliveCrewmates.length <= aliveImpostors.length) {
-              newPhase = 'completed' as any;
-            }
-
-            return {
-              ...prev,
-              phase: newPhase,
-              agents: updatedAgents,
-              impostorsEliminated: newImpostorsEliminated,
-              crewmatesRemaining: newCrewmatesRemaining,
-            };
+          let newPhase = 'discussion' as any;
+          let newWinner: 'impostors' | 'crewmates' | null = null;
+          if (aliveImpostors.length === 0) {
+            newPhase = 'completed' as any;
+            newWinner = 'crewmates';
+          } else if (aliveCrewmates.length <= aliveImpostors.length) {
+            newPhase = 'completed' as any;
+            newWinner = 'impostors';
           }
 
-          return prev;
+          return {
+            ...prev,
+            phase: newPhase,
+            agents: updatedAgents,
+            impostorsEliminated: newImpostorsEliminated,
+            crewmatesRemaining: newCrewmatesRemaining,
+            winner: newWinner,
+          };
         }
+
+        return prev; // No player to eliminate
       });
     }, DEFAULT_CONFIG.votingDuration * 1000);
   }, [DEFAULT_CONFIG.votingDuration]);
@@ -254,10 +271,13 @@ export function useGameState() {
       const aliveCrewmates = updatedAgents.filter(a => !a.isImpostor && a.isAlive);
 
       let newPhase = prev.phase;
+      let newWinner: 'impostors' | 'crewmates' | null = null;
       if (aliveImpostors.length === 0) {
         newPhase = 'completed' as any;
+        newWinner = 'crewmates';
       } else if (aliveCrewmates.length <= aliveImpostors.length) {
         newPhase = 'completed' as any;
+        newWinner = 'impostors';
       }
 
       return {
@@ -266,6 +286,7 @@ export function useGameState() {
         agents: updatedAgents,
         impostorsEliminated: newImpostorsEliminated,
         crewmatesRemaining: newCrewmatesRemaining,
+        winner: newWinner,
       };
     });
 
@@ -284,6 +305,10 @@ export function useGameState() {
       totalRounds: DEFAULT_CONFIG.totalRounds,
       impostorsEliminated: 0,
       crewmatesRemaining: 0,
+      currentSabotage: null,
+      tasksAssigned: [],
+      emergencyCooldownRemaining: 0,
+      winner: null,
     });
     setCurrentPlayerId(null);
     console.log('Game reset');

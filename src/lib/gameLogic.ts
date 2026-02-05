@@ -27,6 +27,7 @@ let gameState: GameState = {
   currentSabotage: null,
   tasksAssigned: [],
   emergencyCooldownRemaining: 0,
+  winner: null,
 };
 
 // Task locations for sabotages
@@ -73,7 +74,7 @@ export function generateTasks(count: number): Task[] {
 }
 
 function getTaskDescription(type: Task['type'], location: string): string {
-  const descriptions: Record<string, string> = {
+  const descriptions: Record<string, Record<string, string>> = {
     repair: {
       cafeteria: 'Fix the coffee machine',
       medbay: 'Repair the medical scanner',
