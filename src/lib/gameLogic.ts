@@ -9,8 +9,8 @@ import {
   type SabotageAction,
   type GameEvent,
   type Task,
-  type SabotageType,
   DEFAULT_CONFIG,
+  SabotageType,
 } from '@/types/game';
 
 // Game State Management
@@ -170,11 +170,11 @@ export function completeTask(agentId: number, taskId: string): void {
 
 // Impostor Sabotage Methods
 export const IMPOSTOR_SABOTAGES: SabotageType[] = [
-  'vent_sabotage',
-  'lights_out',
-  'oxygen_sabotage',
-  'reactor_malfunction',
-  'door_lock',
+  SabotageType.VENT_SABOTAGE,
+  SabotageType.LIGHTS_OUT,
+  SabotageType.OXYGEN_SABOTAGE,
+  SabotageType.REACTOR_MALFUNCTION,
+  SabotageType.DOOR_LOCK,
 ];
 
 // Get random sabotage type
