@@ -24,9 +24,9 @@ export type Agent = {
   voteTarget: number | null;
   tasksCompleted: number;
   isImpostor: boolean; // Private - only impostor knows this
+  tasks: Task[]; // Crewmates' current tasks
 
   // Specific abilities
-  tasks: Task[]; // Crewmates' current tasks
   emergencyCooldownRemaining?: number; // Sheriff ability - seconds until can call emergency
   revivedPlayers?: number[]; // Doctor - who they've revived
   sabotageFixCount?: number; // Engineer - how many sabotages fixed
@@ -47,14 +47,6 @@ export type Vote = {
   targetId: number;
   timestamp: number;
   transactionSignature?: string; // On-chain proof
-};
-
-export type SabotageAction = {
-  type: SabotageType;
-  targetId?: number;
-  targetLocation?: string; // For sabotage locations
-  timestamp: number;
-  cooldownRemaining?: number; // For abilities with cooldown
 };
 
 export enum SabotageType {
@@ -79,6 +71,14 @@ export enum SabotageType {
   PROTECT_PLAYER = "protect_player",
 };
 
+export type SabotageAction = {
+  type: SabotageType;
+  targetId?: number;
+  targetLocation?: string; // For sabotage locations
+  timestamp: number;
+  cooldownRemaining?: number; // For abilities with cooldown
+};
+
 export type GameEvent = {
   type: 'kill' | 'sabotage' | 'task_completed' | 'meeting_called' | 'vote_cast' | 'player_eliminated' | 'impostor_revealed' | 'ability_used';
   agentId?: number;
@@ -86,6 +86,17 @@ export type GameEvent = {
   timestamp: number;
   data?: any;
 };
+
+export type GameStats = {
+  totalRounds: number;
+  impostorsEliminated: number;
+  crewmatesEliminated: number;
+  votesCast: number;
+  sabotagesPerformed: number;
+  gameDuration: number;
+};
+
+export type Winner = "impostors" | "crewmates" | null;
 
 export type GameState = {
   phase: GamePhase;
@@ -104,7 +115,8 @@ export type GameState = {
   emergencyCooldownRemaining: number; // Global cooldown after meeting
 
   // Game result
-  winner: 'impostors' | 'crewmates' | null;
+  winner: Winner;
+  stats?: GameStats;
 };
 
 export type GameConfig = {
