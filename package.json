@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel": "bash vercel-build.sh",
     "start": "next start",
     "lint": "next lint"
   },
