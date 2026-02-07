@@ -165,52 +165,56 @@ export function performSabotage(action: SabotageAction): void {
     return;
   }
 
-  const targetId = typeof action.targetId === 'number' ? action.targetId : parseInt(action.targetId as string);
+  // Check kill cooldown
+  if (action.type === SabotageType.KILL && impostor.killCooldownRemaining && impostor.killCooldownRemaining > 0) {
+    return; // Kill is on cooldown
+  }
 
   switch (action.type) {
     case SabotageType.KILL:
       // Impostor Kill Methods
-      switch (action.targetId) {
-        case SabotageType.VENT_SABOTAGE:
-          // Kill via vent
+      const targetId = action.targetId ?? null;
+      
+      if (targetId !== null && typeof targetId !== 'number') {
+        console.error('Invalid target ID: must be a number');
+        return;
+      }
+      
+      // For string-based kill methods, check if targetId matches the sabotage type
+      if (typeof targetId === 'string') {
+        const methodType = targetId as unknown;
+        
+        if (methodType === SabotageType.VENT_SABOTAGE.toString()) {
           eliminatePlayer(targetId);
           console.log(`Agent ${impostor.id} killed ${targetId} via vent`);
-          break;
-
-        case SabotageType.LIGHTS_OUT:
-          // Kill during lights out
+        } else if (methodType === SabotageType.LIGHTS_OUT.toString()) {
           eliminatePlayer(targetId);
           console.log(`Agent ${impostor.id} killed ${targetId} during lights outage`);
-          break;
-
-        case SabotageType.OXYGEN_SABOTAGE:
-          // Kill during oxygen sabotage
+        } else if (methodType === SabotageType.OXYGEN_SABOTAGE.toString()) {
           eliminatePlayer(targetId);
           console.log(`Agent ${impostor.id} killed ${targetId} during oxygen failure`);
-          break;
-
-        case SabotageType.DOOR_LOCK:
-          // Kill when doors are locked
+        } else if (methodType === SabotageType.DOOR_LOCK.toString()) {
           eliminatePlayer(targetId);
           console.log(`Agent ${impostor.id} killed ${targetId} via door lock`);
-          break;
-
-        default:
-          // Melee kill
+        } else {
+          // Default/Melee kill
           eliminatePlayer(targetId);
           console.log(`Agent ${impostor.id} killed ${targetId} via melee attack`);
+        }
+      } else {
+        // targetId is a valid number, perform melee kill
+        eliminatePlayer(targetId);
+        console.log(`Agent ${impostor.id} killed ${targetId} via melee attack`);
       }
 
       // Set kill cooldown
-      if (action.type === SabotageType.KILL) {
-        const updatedAgents = gameState.agents.map(agent => {
-          if (agent.id === impostor.id) {
-            return { ...agent, killCooldownRemaining: DEFAULT_CONFIG.killCooldown };
-          }
-          return agent;
-        });
-        gameState.agents = updatedAgents;
-      }
+      const updatedAgents = gameState.agents.map(agent => {
+        if (agent.id === impostor.id) {
+          return { ...agent, killCooldownRemaining: DEFAULT_CONFIG.killCooldown };
+        }
+        return agent;
+      });
+      gameState.agents = updatedAgents;
       break;
 
     case SabotageType.VENT_SABOTAGE:
