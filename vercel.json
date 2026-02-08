@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": null,
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_FORCE_TAILWIND_INSTALL": "true"
+  }
+}
